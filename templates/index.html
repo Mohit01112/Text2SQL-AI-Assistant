@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+```
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Text2SQL AI Assistant</title>
+
+<style>
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+
+    body {
+        background: #f4f6f9;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+
+    .container {
+        width: 95%;
+        max-width: 1000px;
+        height: 90vh;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+
+    .header {
+        background: #2563eb;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+
+    .header h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+
+
+    .header p {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+
+    .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8fafc;
+    }
+
+
+    .message {
+        display: flex;
+        margin-bottom: 20px;
+    }
+
+
+    .user-message {
+        justify-content: flex-end;
+    }
+
+
+    .bot-message {
+        justify-content: flex-start;
+    }
+
+
+    .message-content {
+        max-width: 80%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+
+    .user-message .message-content {
+        background: #2563eb;
+        color: white;
+        border-bottom-right-radius: 3px;
+    }
+
+
+    .bot-message .message-content {
+        background: white;
+        color: #1f2937;
+        border: 1px solid #e5e7eb;
+        border-bottom-left-radius: 3px;
+    }
+
+
+    .assistant-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #2563eb;
+        font-size: 16px;
+    }
+
+
+    .answer-text {
+        margin-top: 5px;
+        white-space: pre-wrap;
+    }
+
+
+    .result-container {
+        margin-top: 15px;
+        overflow-x: auto;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+    }
+
+
+    th {
+        background: #2563eb;
+        color: white;
+    }
+
+
+    th,
+    td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+
+    tr:nth-child(even) {
+        background: #f2f2f2;
+    }
+
+
+    .input-container {
+        display: flex;
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        gap: 10px;
+    }
+
+
+    #questionInput {
+        flex: 1;
+        padding: 13px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        outline: none;
+        font-size: 15px;
+    }
+
+
+    #questionInput:focus {
+        border-color: #2563eb;
+    }
+
+
+    #sendButton {
+        padding: 12px 25px;
+        border: none;
+        background: #2563eb;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+
+    #sendButton:hover {
+        background: #1d4ed8;
+    }
+
+
+    #sendButton:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+
+    .loading {
+        font-style: italic;
+        color: #64748b;
+    }
+
+
+    .error {
+        color: #dc2626;
+    }
+
+
+    .welcome {
+        text-align: center;
+        color: #64748b;
+        margin-top: 50px;
+    }
+
+
+    .example-questions {
+        margin-top: 20px;
+    }
+
+
+    .example-question {
+        display: inline-block;
+        margin: 5px;
+        padding: 10px 15px;
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #2563eb;
+    }
+
+
+    .example-question:hover {
+        background: #eff6ff;
+    }
+
+
+    /* ================================================
+       TABLE BUTTON
+    ================================================= */
+
+    .table-button-container {
+        margin-top: 15px;
+    }
+
+
+    .view-table-button {
+        padding: 9px 16px;
+        border: none;
+        background: #2563eb;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+
+    .view-table-button:hover {
+        background: #1d4ed8;
+    }
+
+
+    /* TABLE IS HIDDEN BY DEFAULT */
+
+    .hidden-table {
+        display: none;
+    }
+
+
+    @media (max-width: 600px) {
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            border-radius: 0;
+        }
+
+
+        .message-content {
+            max-width: 90%;
+        }
+
+
+        #sendButton {
+            padding: 12px 15px;
+        }
+
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>🤖 Text2SQL AI Assistant</h1>
+
+        <p>
+            Ask questions about your database in natural language
+        </p>
+
+    </div>
+
+
+    <!-- CHAT AREA -->
+
+    <div class="chat-container" id="chatContainer">
+
+
+        <div class="welcome">
+
+            <h2>Welcome to Text2SQL AI Assistant 👋</h2>
+
+            <p>
+                Ask a question and I will analyze your database
+                and provide you with a clear answer.
+            </p>
+
+
+            <div class="example-questions">
+
+
+                <div class="example-question"
+                    onclick="setQuestion('What are the names of all products?')">
+
+                    What are the names of all products?
+
+                </div>
+
+
+                <div class="example-question"
+                    onclick="setQuestion('List all customer names')">
+
+                    List all customer names
+
+                </div>
+
+
+                <div class="example-question"
+                    onclick="setQuestion('What was the budget of Product 12?')">
+
+                    What was the budget of Product 12?
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- INPUT AREA -->
+
+    <div class="input-container">
+
+
+        <input
+            type="text"
+            id="questionInput"
+            placeholder="Ask a question..."
+        >
+
+
+        <button id="sendButton"
+            onclick="sendQuestion()">
+
+            Send
+
+        </button>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+    const questionInput =
+        document.getElementById("questionInput");
+
+
+    const sendButton =
+        document.getElementById("sendButton");
+
+
+    const chatContainer =
+        document.getElementById("chatContainer");
+
+
+
+    // ================================================
+    // SET EXAMPLE QUESTION
+    // ================================================
+
+    function setQuestion(question) {
+
+        questionInput.value = question;
+
+        questionInput.focus();
+
+    }
+
+
+
+    // ================================================
+    // ENTER KEY
+    // ================================================
+
+    questionInput.addEventListener(
+        "keypress",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                sendQuestion();
+
+            }
+
+        }
+    );
+
+
+
+    // ================================================
+    // ADD USER MESSAGE
+    // ================================================
+
+    function addUserMessage(message) {
+
+
+        const messageDiv =
+            document.createElement("div");
+
+
+        messageDiv.className =
+            "message user-message";
+
+
+        messageDiv.innerHTML = `
+
+            <div class="message-content">
+
+                ${escapeHTML(message)}
+
+            </div>
+
+        `;
+
+
+        chatContainer.appendChild(messageDiv);
+
+
+        scrollToBottom();
+
+    }
+
+
+
+    // ================================================
+    // ADD LOADING MESSAGE
+    // ================================================
+
+    function addLoadingMessage() {
+
+
+        const messageDiv =
+            document.createElement("div");
+
+
+        messageDiv.className =
+            "message bot-message";
+
+
+        messageDiv.id =
+            "loadingMessage";
+
+
+        messageDiv.innerHTML = `
+
+            <div class="message-content loading">
+
+                🤖 Assistant is thinking...
+
+            </div>
+
+        `;
+
+
+        chatContainer.appendChild(messageDiv);
+
+
+        scrollToBottom();
+
+    }
+
+
+
+    // ================================================
+    // REMOVE LOADING MESSAGE
+    // ================================================
+
+    function removeLoadingMessage() {
+
+
+        const loadingMessage =
+            document.getElementById("loadingMessage");
+
+
+        if (loadingMessage) {
+
+            loadingMessage.remove();
+
+        }
+
+    }
+
+
+
+    // ================================================
+    // ADD BOT MESSAGE
+    // ================================================
+
+    function addBotMessage(data) {
+
+
+        const messageDiv =
+            document.createElement("div");
+
+
+        messageDiv.className =
+            "message bot-message";
+
+
+        let answer = "";
+
+
+        /*
+        ================================================
+
+        SUPPORT DIFFERENT BACKEND RESPONSE FORMATS
+
+        ================================================
+        */
+
+
+        if (data.answer) {
+
+            answer = data.answer;
+
+        }
+
+        else if (data.response) {
+
+            answer = data.response;
+
+        }
+
+        else if (data.message) {
+
+            answer = data.message;
+
+        }
+
+
+        let content = `
+
+            <div class="message-content">
+
+                <div class="assistant-title">
+
+                    🤖 Assistant
+
+                </div>
+
+        `;
+
+
+        /*
+        ================================================
+
+        DISPLAY EXPLANATION / ANSWER
+
+        ================================================
+        */
+
+
+        if (answer) {
+
+            content += `
+
+                <div class="answer-text">
+
+                    ${escapeHTML(answer)}
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+        ================================================
+
+        DISPLAY DATABASE RESULTS
+
+        TABLE IS HIDDEN BY DEFAULT
+
+        ================================================
+        */
+
+
+        if (
+            data.results &&
+            Array.isArray(data.results) &&
+            data.results.length > 0
+        ) {
+
+
+            const tableId =
+                "table_" + Date.now();
+
+
+            content += `
+
+                <div class="table-button-container">
+
+                    <button
+                        class="view-table-button"
+                        onclick="toggleTable('${tableId}', this)"
+                    >
+
+                        📊 View Table
+
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="${tableId}"
+                    class="result-container hidden-table"
+                >
+
+                    <strong>
+
+                        Database Results
+                        (${data.row_count || data.results.length} rows)
+
+                    </strong>
+
+
+                    ${createTable(data.results)}
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+        ================================================
+
+        SHOW NO RECORDS ONLY WHEN
+
+        THERE IS NO ANSWER
+
+        AND NO RESULTS
+
+        ================================================
+        */
+
+
+        if (
+
+            (!answer || answer.trim() === "")
+
+            &&
+
+            (
+                !data.results
+
+                ||
+
+                !Array.isArray(data.results)
+
+                ||
+
+                data.results.length === 0
+            )
+
+        ) {
+
+
+            content += `
+
+                <p style="margin-top: 10px;">
+
+                    No records found.
+
+                </p>
+
+            `;
+
+        }
+
+
+        content += `
+
+            </div>
+
+        `;
+
+
+        messageDiv.innerHTML =
+            content;
+
+
+        chatContainer.appendChild(
+            messageDiv
+        );
+
+
+        scrollToBottom();
+
+    }
+
+
+
+    // ================================================
+    // SHOW / HIDE TABLE
+    // ================================================
+
+    function toggleTable(tableId, button) {
+
+
+        const table =
+            document.getElementById(tableId);
+
+
+        if (!table) {
+
+            return;
+
+        }
+
+
+        if (table.style.display === "block") {
+
+
+            table.style.display =
+                "none";
+
+
+            button.innerHTML =
+                "📊 View Table";
+
+        }
+
+        else {
+
+
+            table.style.display =
+                "block";
+
+
+            button.innerHTML =
+                "📊 Hide Table";
+
+        }
+
+
+        scrollToBottom();
+
+    }
+
+
+
+    // ================================================
+    // ADD ERROR MESSAGE
+    // ================================================
+
+    function addErrorMessage(error) {
+
+
+        const messageDiv =
+            document.createElement("div");
+
+
+        messageDiv.className =
+            "message bot-message";
+
+
+        messageDiv.innerHTML = `
+
+            <div class="message-content error">
+
+                ❌ ${escapeHTML(error)}
+
+            </div>
+
+        `;
+
+
+        chatContainer.appendChild(
+            messageDiv
+        );
+
+
+        scrollToBottom();
+
+    }
+
+
+
+    // ================================================
+    // CREATE TABLE
+    // ================================================
+
+    function createTable(results) {
+
+
+        if (
+
+            !results
+
+            ||
+
+            !Array.isArray(results)
+
+            ||
+
+            results.length === 0
+
+        ) {
+
+            return "";
+
+        }
+
+
+        const columns =
+            Object.keys(results[0]);
+
+
+        let table =
+            "<table>";
+
+
+        // TABLE HEADER
+
+        table +=
+            "<thead><tr>";
+
+
+        columns.forEach(
+            function(column) {
+
+
+                table += `
+
+                    <th>
+
+                        ${escapeHTML(column)}
+
+                    </th>
+
+                `;
+
+            }
+        );
+
+
+        table +=
+            "</tr></thead>";
+
+
+        // TABLE BODY
+
+        table +=
+            "<tbody>";
+
+
+        results.forEach(
+            function(row) {
+
+
+                table +=
+                    "<tr>";
+
+
+                columns.forEach(
+                    function(column) {
+
+
+                        let value =
+                            row[column];
+
+
+                        if (
+
+                            value === null
+
+                            ||
+
+                            value === undefined
+
+                        ) {
+
+                            value = "";
+
+                        }
+
+
+                        table += `
+
+                            <td>
+
+                                ${escapeHTML(value)}
+
+                            </td>
+
+                        `;
+
+                    }
+                );
+
+
+                table +=
+                    "</tr>";
+
+            }
+        );
+
+
+        table +=
+            "</tbody></table>";
+
+
+        return table;
+
+    }
+
+
+
+    // ================================================
+    // SEND QUESTION
+    // ================================================
+
+    async function sendQuestion() {
+
+
+        const question =
+            questionInput.value.trim();
+
+
+        if (!question) {
+
+            return;
+
+        }
+
+
+        // REMOVE WELCOME MESSAGE
+
+        const welcome =
+            document.querySelector(".welcome");
+
+
+        if (welcome) {
+
+            welcome.remove();
+
+        }
+
+
+        // ADD USER MESSAGE
+
+        addUserMessage(
+            question
+        );
+
+
+        // CLEAR INPUT
+
+        questionInput.value =
+            "";
+
+
+        // DISABLE BUTTON
+
+        sendButton.disabled =
+            true;
+
+
+        // SHOW LOADING
+
+        addLoadingMessage();
+
+
+        try {
+
+
+            const response =
+                await fetch(
+
+                    "/chat",
+
+                    {
+
+                        method:
+                            "POST",
+
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+
+                        body:
+
+                            JSON.stringify(
+
+                                {
+
+                                    question:
+                                        question
+
+                                }
+
+                            )
+
+                    }
+
+                );
+
+
+            let data;
+
+
+            try {
+
+                data =
+                    await response.json();
+
+            }
+
+            catch (jsonError) {
+
+
+                throw new Error(
+
+                    "Invalid response received from server."
+
+                );
+
+            }
+
+
+            removeLoadingMessage();
+
+
+            if (
+
+                response.ok
+
+                &&
+
+                data.success !== false
+
+            ) {
+
+
+                addBotMessage(
+                    data
+                );
+
+            }
+
+
+            else {
+
+
+                addErrorMessage(
+
+                    data.error
+
+                    ||
+
+                    "Something went wrong."
+
+                );
+
+            }
+
+
+        }
+
+
+        catch (error) {
+
+
+            removeLoadingMessage();
+
+
+            addErrorMessage(
+
+                error.message
+
+                ||
+
+                "Something went wrong. Please try again."
+
+            );
+
+
+            console.error(
+                error
+            );
+
+        }
+
+
+        finally {
+
+
+            sendButton.disabled =
+                false;
+
+
+            questionInput.focus();
+
+        }
+
+
+    }
+
+
+
+    // ================================================
+    // ESCAPE HTML
+    // ================================================
+
+    function escapeHTML(value) {
+
+
+        if (
+
+            value === null
+
+            ||
+
+            value === undefined
+
+        ) {
+
+            return "";
+
+        }
+
+
+        const div =
+            document.createElement("div");
+
+
+        div.textContent =
+            String(value);
+
+
+        return div.innerHTML;
+
+    }
+
+
+
+    // ================================================
+    // SCROLL TO BOTTOM
+    // ================================================
+
+    function scrollToBottom() {
+
+
+        chatContainer.scrollTop =
+            chatContainer.scrollHeight;
+
+    }
+
+
+</script>
+```
+
+</body>
+
+</html>
